@@ -13,9 +13,11 @@ services:
       - db_data:/var/lib/postgresql/data
 
   app:
-    build: .
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     volumes:
-      - ".:/backend"
+      - "./backend:/backend"
     env_file:
       - ".env"
     ports:
