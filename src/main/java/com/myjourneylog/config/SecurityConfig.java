@@ -20,20 +20,16 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(
-                                "/login",          // 로그인 페이지
-                                "/signup",
-                                "/api/v1/users/signup",         // 회원가입 페이지
-                                "/css/**",         // 정적리소스(css)
-                                "/js/**",          // 정적리소스(js)
-                                "/images/**"       // 정적리소스(images)
+                                "/login",
+                                "/api/v1/users/signup",
+                                "/css/**", "/js/**", "/images/**"
                         ).permitAll()
-                        .anyRequest().authenticated() // 그 외에는 인증 필요
+                        .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
                         .permitAll()
-                )
-                .logout(logout -> logout.permitAll());
+                );
         return http.build();
     }
 }
