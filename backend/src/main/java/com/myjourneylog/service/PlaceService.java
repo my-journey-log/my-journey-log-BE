@@ -1,5 +1,6 @@
 package com.myjourneylog.service;
-
+import java.util.List;
+import com.myjourneylog.dto.PlaceResponse;
 import com.myjourneylog.domain.Place;
 import com.myjourneylog.domain.User;
 import com.myjourneylog.dto.PlaceCreateRequest;
@@ -8,6 +9,8 @@ import com.myjourneylog.repository.PlaceRepository;
 import com.myjourneylog.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import java.util.stream.Collectors;
+
 
 import java.time.LocalDateTime;
 
@@ -45,5 +48,11 @@ public class PlaceService {
                 .category(saved.getCategory())
                 .createdBy(user.getId())
                 .build();
+    }
+
+    public List<PlaceResponse> getAllPlaces() {
+        return placeRepository.findAll().stream()
+                .map(PlaceResponse::fromEntity)
+                .collect(Collectors.toList());
     }
 }

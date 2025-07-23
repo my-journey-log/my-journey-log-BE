@@ -1,4 +1,5 @@
 package com.myjourneylog.dto;
+import com.myjourneylog.domain.Place;
 
 import lombok.*;
 
@@ -15,4 +16,17 @@ public class PlaceResponse {
     private String imageUrl;
     private String category;
     private Long createdBy;
+
+    public static PlaceResponse fromEntity(Place place) {
+        return PlaceResponse.builder()
+                .id(place.getId())
+                .name(place.getName())
+                .latitude(place.getLatitude())
+                .longitude(place.getLongitude())
+                .description(place.getDescription())
+                .imageUrl(place.getImageUrl())
+                .category(place.getCategory())
+                .createdBy(place.getCreatedBy() != null ? place.getCreatedBy().getId() : null)
+                .build();
+    }
 }
