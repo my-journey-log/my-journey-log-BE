@@ -28,15 +28,6 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .formLogin(AbstractHttpConfigurer::disable);
-                                "/css/**", "/js/**", "/images/**",
-                                "/generate-text"
-                        ).permitAll()
-                        .anyRequest().authenticated()
-                )
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .permitAll()
-                );
         return http.build();
     }
 }
