@@ -1,5 +1,7 @@
 FROM openjdk:24-jdk-slim-bullseye
 
+RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /backend
 
 COPY gradle/wrapper/ gradle/wrapper/
@@ -7,5 +9,4 @@ COPY gradlew settings.gradle build.gradle ./
 
 RUN chmod +x ./gradlew
 
-
-CMD ["./gradlew", "bootRun", "--no-daemon"]
+CMD ["bash", "-c", "./gradlew bootRun --no-daemon"]

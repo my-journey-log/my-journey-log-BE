@@ -2,13 +2,14 @@ package com.myjourneylog.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.HashMap;
 import java.util.List;
@@ -21,31 +22,49 @@ import java.util.Map;
 @Service
 public class GeminiTextService {
 
-    private final UriComponents fullApiUrl;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper; // JSON 파싱을 위한 ObjectMapper
 
-    public GeminiTextService(UriComponents fullApiUrl, RestTemplate restTemplate, ObjectMapper objectMapper) {
-        this.fullApiUrl = fullApiUrl;
+    @Value("${gemini.api-key}") // application.properties에서 API 키 주입
+    private String apiKey;
+
+    @Value("${gemini.api-url}") // application.properties에서 API URL 주입
+    private String apiUrl;
+
+    // 생성자 주입을 통해 RestTemplate과 ObjectMapper를 받습니다.
+    // fullApiUrl은 이제 생성자 인자가 아니라 내부적으로 구성됩니다.
+    public GeminiTextService(RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Gemini API를 호출하여 주어진 프롬프트에 대한 텍스트를 생성합니다.
+     *
+     * @param prompt 텍스트 생성을 위한 프롬프트
+     * @return 생성된 텍스트
+     */
     public String getGeminiText(String prompt) {
+        // API URL에 API 키를 쿼리 파라미터로 추가
+        // 이제 서비스 내부에서 직접 apiUrl과 apiKey를 사용하여 구성합니다.
+        String fullApiUrlString = UriComponentsBuilder.fromUriString(apiUrl)
+                .queryParam("key", apiKey)
+                .build().toUriString();
+
         // Gemini API 요청 본문 생성 (Map 형태로)
         Map<String, Object> requestBody = createGeminiApiRequest(prompt);
 
         // HTTP 헤더 설정 (Content-Type: application/json)
         HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
         // HTTP 엔티티 생성 (요청 본문과 헤더 포함)
         HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
 
-            try {
+        try {
             // RestTemplate을 사용하여 POST 요청 전송
             // 응답을 JsonNode로 받아서 직접 파싱합니다.
-            JsonNode geminiApiResponse = restTemplate.postForObject(fullApiUrl.toUriString(), requestEntity, JsonNode.class);
+            JsonNode geminiApiResponse = restTemplate.postForObject(fullApiUrlString, requestEntity, JsonNode.class);
 
             if (geminiApiResponse != null && geminiApiResponse.has("candidates")) {
                 JsonNode candidates = geminiApiResponse.get("candidates");
@@ -99,5 +118,4 @@ public class GeminiTextService {
 
         return requestMap;
     }
-
 }
