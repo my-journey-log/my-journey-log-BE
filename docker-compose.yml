@@ -29,5 +29,16 @@ services:
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       GEMINI_API_URL: ${GEMINI_API_URL}
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - app
+
 volumes:
   db_data:
