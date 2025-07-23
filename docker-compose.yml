@@ -16,6 +16,10 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+
+    volumes:
+      - "./backend:/backend"
+
     ports:
       - "8080:8080"
     depends_on:
@@ -24,6 +28,20 @@ services:
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_API_URL: ${GEMINI_API_URL}
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - app
 
 volumes:
   db_data:
