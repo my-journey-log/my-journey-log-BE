@@ -15,38 +15,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Gemini API를 직접 호출하여 텍스트를 생성하는 서비스 클래스입니다.
- * DTO 클래스 없이 Map과 JsonNode를 사용하여 요청/응답을 처리합니다.
- */
 @Service
-public class GeminiTextService {
+public class ChatbotService {
 
     private final RestTemplate restTemplate;
-    private final ObjectMapper objectMapper; // JSON 파싱을 위한 ObjectMapper
+    private final ObjectMapper objectMapper;
 
-    @Value("${gemini.api-key}") // application.properties에서 API 키 주입
+    @Value("${gemini.api-key}")
     private String apiKey;
 
-    @Value("${gemini.api-url}") // application.properties에서 API URL 주입
+    @Value("${gemini.api-url}")
     private String apiUrl;
 
-    // 생성자 주입을 통해 RestTemplate과 ObjectMapper를 받습니다.
-    // fullApiUrl은 이제 생성자 인자가 아니라 내부적으로 구성됩니다.
-    public GeminiTextService(RestTemplate restTemplate, ObjectMapper objectMapper) {
+    public ChatbotService(RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
     }
 
-    /**
-     * Gemini API를 호출하여 주어진 프롬프트에 대한 텍스트를 생성합니다.
-     *
-     * @param prompt 텍스트 생성을 위한 프롬프트
-     * @return 생성된 텍스트
-     */
-    public String getGeminiText(String prompt) {
-        // API URL에 API 키를 쿼리 파라미터로 추가
-        // 이제 서비스 내부에서 직접 apiUrl과 apiKey를 사용하여 구성합니다.
+    public String getText(String prompt) {
         String fullApiUrlString = UriComponentsBuilder.fromUriString(apiUrl)
                 .queryParam("key", apiKey)
                 .build().toUriString();
@@ -65,41 +51,26 @@ public class GeminiTextService {
             // RestTemplate을 사용하여 POST 요청 전송
             // 응답을 JsonNode로 받아서 직접 파싱합니다.
             JsonNode geminiApiResponse = restTemplate.postForObject(fullApiUrlString, requestEntity, JsonNode.class);
-
             if (geminiApiResponse != null && geminiApiResponse.has("candidates")) {
-                JsonNode candidates = geminiApiResponse.get("candidates");
-                if (candidates.isArray() && candidates.size() > 0) {
-                    JsonNode firstCandidate = candidates.get(0);
-                    if (firstCandidate.has("content") && firstCandidate.get("content").has("parts")) {
-                        JsonNode parts = firstCandidate.get("content").get("parts");
-                        if (parts.isArray() && parts.size() > 0 && parts.get(0).has("text")) {
-                            String generatedText = parts.get(0).get("text").asText();
-                            System.out.println("Gemini Raw Response: " + generatedText); // 디버깅용
-                            return generatedText;
-                        }
-                    }
+                String generatedText = geminiApiResponse.path("candidates").path(0).path("content").path("parts").path(0).path("text").asText();
+                if (!generatedText.isEmpty()) { // 빈 문자열이 아니면 유효한 응답으로 간주
+                    System.out.println("Gemini Raw Response: " + generatedText);
+                    return generatedText;
                 }
             }
-            System.err.println("Gemini API response was empty or invalid: " + geminiApiResponse);
-            return "Error: Gemini API 응답이 비어있거나 유효하지 않습니다.";
-
+            System.err.println("Gemini API response was empty or invalid or missing expected fields: " + geminiApiResponse);
+            return "Error: Gemini API 응답이 비어있거나 유효하지 않거나 예상 필드가 누락되었습니다.";
         } catch (HttpClientErrorException e) {
-            // HTTP 클라이언트 오류 (예: 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found)
             System.err.println("HTTP Client Error calling Gemini API: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
             e.printStackTrace();
             return "Error: Gemini API 호출 중 HTTP 오류가 발생했습니다: " + e.getStatusCode() + " - " + e.getResponseBodyAsString();
         } catch (Exception e) {
-            // 기타 예외 (IO 오류, JSON 파싱 오류 등)
             System.err.println("Error calling Gemini API: " + e.getMessage());
             e.printStackTrace();
             return "Error: Gemini API 호출 중 알 수 없는 오류가 발생했습니다: " + e.getMessage();
         }
     }
 
-
-    /**
-     * Gemini API 요청 본문을 Map 형태로 생성합니다.
-     */
     private Map<String, Object> createGeminiApiRequest(String prompt) {
         Map<String, Object> requestMap = new HashMap<>();
 
@@ -113,7 +84,7 @@ public class GeminiTextService {
 
         // 'generationConfig' 부분
         Map<String, Object> generationConfig = new HashMap<>();
-        generationConfig.put("responseMimeType", "text/plain"); // 텍스트 응답을 위한 설정
+        generationConfig.put("responseMimeType", "text/plain");
         requestMap.put("generationConfig", generationConfig);
 
         return requestMap;

@@ -22,15 +22,13 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/login",
                                 "/api/v1/users/signup",
+                                "/api/v1/places/**",
                                 "/css/**", "/js/**", "/images/**",
-                                "/generate-text"
+                                "/chatbot"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .permitAll()
-                );
+                .formLogin(AbstractHttpConfigurer::disable);
         return http.build();
     }
 }
