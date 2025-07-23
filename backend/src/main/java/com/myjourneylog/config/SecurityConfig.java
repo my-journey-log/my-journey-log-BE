@@ -22,7 +22,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/login",
                                 "/api/v1/users/signup",
-                                "/css/**", "/js/**", "/images/**"
+                                "/css/**", "/js/**", "/images/**",
+                                "/generate-text"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
