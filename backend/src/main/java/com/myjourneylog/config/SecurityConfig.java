@@ -23,7 +23,8 @@ public class SecurityConfig {
                                 "/login",
                                 "/api/v1/users/signup",
                                 "/api/v1/places/**",
-                                "/css/**", "/js/**", "/images/**"
+                                "/css/**", "/js/**", "/images/**",
+                                "/chatbot"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
