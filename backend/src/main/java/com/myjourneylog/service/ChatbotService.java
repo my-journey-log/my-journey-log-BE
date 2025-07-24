@@ -2,6 +2,7 @@ package com.myjourneylog.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.myjourneylog.dto.ChatbotRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -32,13 +33,18 @@ public class ChatbotService {
         this.objectMapper = objectMapper;
     }
 
-    public String getText(String prompt) {
+    public String getText(ChatbotRequest request) {
         String fullApiUrlString = UriComponentsBuilder.fromUriString(apiUrl)
                 .queryParam("key", apiKey)
                 .build().toUriString();
 
         // Gemini API 요청 본문 생성 (Map 형태로)
-        Map<String, Object> requestBody = createGeminiApiRequest(prompt);
+        StringBuilder prompt = new StringBuilder();
+        prompt.append("여행 장소: ").append(request.getPlace()).append("\n");
+        prompt.append("여행 일정: ").append(request.getDate()).append("\n");
+        prompt.append("여행 목적: ").append(request.getTarget()).append("\n");
+        prompt.append("혼자 여행을 위해 여행 일정에 맞게 아침, 점심, 저녁으로 코스 추천해줘");
+        Map<String, Object> requestBody = createGeminiApiRequest(prompt.toString());
 
         // HTTP 헤더 설정 (Content-Type: application/json)
         HttpHeaders headers = new HttpHeaders();

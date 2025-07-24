@@ -25,7 +25,6 @@ public class SecurityConfig {
                                 "/api/v1/places/**",
                                 "/css/**", "/js/**", "/images/**",
                                 "/chatbot"
-
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
