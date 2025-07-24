@@ -20,7 +20,6 @@ import java.util.Map;
 public class ChatbotService {
 
     private final RestTemplate restTemplate;
-    private final ObjectMapper objectMapper;
 
     @Value("${gemini.api-key}")
     private String apiKey;
@@ -28,9 +27,8 @@ public class ChatbotService {
     @Value("${gemini.api-url}")
     private String apiUrl;
 
-    public ChatbotService(RestTemplate restTemplate, ObjectMapper objectMapper) {
+    public ChatbotService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
-        this.objectMapper = objectMapper;
     }
 
     public String getText(ChatbotRequest request) {
@@ -39,11 +37,7 @@ public class ChatbotService {
                 .build().toUriString();
 
         // Gemini API 요청 본문 생성 (Map 형태로)
-        StringBuilder prompt = new StringBuilder();
-        prompt.append("여행 장소: ").append(request.getPlace()).append("\n");
-        prompt.append("여행 일정: ").append(request.getDate()).append("\n");
-        prompt.append("여행 목적: ").append(request.getTarget()).append("\n");
-        prompt.append("혼자 여행을 위해 여행 일정에 맞게 아침, 점심, 저녁으로 코스 추천해줘");
+        String prompt = createPrompt(request);
         Map<String, Object> requestBody = createGeminiApiRequest(prompt.toString());
 
         // HTTP 헤더 설정 (Content-Type: application/json)
@@ -54,13 +48,10 @@ public class ChatbotService {
         HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
 
         try {
-            // RestTemplate을 사용하여 POST 요청 전송
-            // 응답을 JsonNode로 받아서 직접 파싱합니다.
             JsonNode geminiApiResponse = restTemplate.postForObject(fullApiUrlString, requestEntity, JsonNode.class);
             if (geminiApiResponse != null && geminiApiResponse.has("candidates")) {
                 String generatedText = geminiApiResponse.path("candidates").path(0).path("content").path("parts").path(0).path("text").asText();
                 if (!generatedText.isEmpty()) { // 빈 문자열이 아니면 유효한 응답으로 간주
-                    System.out.println("Gemini Raw Response: " + generatedText);
                     return generatedText;
                 }
             }
@@ -75,6 +66,45 @@ public class ChatbotService {
             e.printStackTrace();
             return "Error: Gemini API 호출 중 알 수 없는 오류가 발생했습니다: " + e.getMessage();
         }
+    }
+
+    private String createPrompt(ChatbotRequest request) {
+        String promptTemplate = """
+            당신은 전문 여행 플래너입니다. 다음 여행 계획에 따라 상세한 여행 코스를 반드시 JSON 형식으로 추천해주세요.
+            반드시 다음 JSON 스키마를 따르고, 한국어로 내용을 채워주세요.
+            JSON만 출력하고 다른 설명은 일절 포함하지 마세요.
+
+            여행 계획:
+            - 여행 장소: %s
+            - 여행 일정: %s
+            - 여행 목적: %s
+            혼자 여행을 위해 여행 일정에 맞게 아침, 점심, 저녁으로 코스를 추천해주는데, 일정 단위로 가능하면 거리가 가까웠으면 좋겠어.
+
+            JSON 응답은 다음 형식이어야 합니다:
+            ```json
+            {
+              "destination": "[여행 목적지]",
+              "dailyPlans": [
+                {
+                  "day": 1,
+                  "morning": { "recommendation": "[추천 관광 & 추천 맛집]", "description": "- 추천 관광지 설명\\n- 추천 맛집 설명" },
+                  "lunch": { "recommendation": "[추천 관광 & 추천 맛집]", "description": "- 추천 관광지 설명\\n- 추천 맛집 설명" },
+                  "dinner": { "recommendation": "[추천 관광 & 추천 맛집]", "description": "- 추천 관광지 설명\\n- 추천 맛집 설명" }
+                }
+              ]
+            }
+            ```
+
+            각 일자에 대해 아침, 점심, 저녁 계획을 포함해야 합니다. recommendation은 간결하게 추천 관광지 1곳, 추천 맛집 1곳을, description은 상세하게 설명해주세요.
+            마크다운 표시를 제거하고 제공해주세요 (제거대상: #, *).
+            반드시! JSON 형식의 응답으로 제공해주세요.
+            """;
+
+        return String.format(promptTemplate,
+                request.getPlace(),
+                request.getDate(),
+                request.getTarget()
+        );
     }
 
     private Map<String, Object> createGeminiApiRequest(String prompt) {
