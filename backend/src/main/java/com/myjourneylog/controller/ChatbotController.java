@@ -1,9 +1,9 @@
 package com.myjourneylog.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.myjourneylog.dto.ChatbotRequest;
-import com.myjourneylog.dto.ChatbotResponse;
+import com.myjourneylog.dto.CourseDTO;
 import com.myjourneylog.service.ChatbotService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,17 +11,14 @@ import java.util.List;
 
 
 @RestController
+@RequiredArgsConstructor
 public class ChatbotController {
 
     private final ChatbotService chatbotService;
 
-    public ChatbotController(ChatbotService chatbotService) {
-        this.chatbotService = chatbotService;
-    }
-
     @PostMapping("/chatbot")
-    public ResponseEntity<List<ChatbotResponse>> generateText(@RequestBody ChatbotRequest request) {
-        List<ChatbotResponse> generatedText = chatbotService.getText(request);
+    public ResponseEntity<List<CourseDTO>> generateText(@RequestBody ChatbotRequest request) {
+        List<CourseDTO> generatedText = chatbotService.getText(request);
         return ResponseEntity.ok(generatedText);
     }
 }

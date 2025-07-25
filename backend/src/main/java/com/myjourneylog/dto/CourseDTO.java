@@ -5,9 +5,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ChatbotResponse {
+public class CourseDTO {
     private String day;
     private String time;
     private String recomm;
-    private String desc;
+    private String description;
 }

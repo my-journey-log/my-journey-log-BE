@@ -3,7 +3,8 @@ package com.myjourneylog.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.myjourneylog.dto.ChatbotRequest;
-import com.myjourneylog.dto.ChatbotResponse;
+import com.myjourneylog.dto.CourseDTO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class ChatbotService {
 
     private final RestTemplate restTemplate;
@@ -30,12 +32,7 @@ public class ChatbotService {
     @Value("${gemini.api-url}")
     private String apiUrl;
 
-    public ChatbotService(RestTemplate restTemplate, ObjectMapper objectMapper) {
-        this.restTemplate = restTemplate;
-        this.objectMapper = objectMapper;
-    }
-
-    public List<ChatbotResponse> getText(ChatbotRequest request) {
+    public List<CourseDTO> getText(ChatbotRequest request) {
         String fullApiUrlString = UriComponentsBuilder.fromUriString(apiUrl)
                 .queryParam("key", apiKey)
                 .build().toUriString();
@@ -66,7 +63,7 @@ public class ChatbotService {
                             jsonResponseText = jsonResponseText.replace("#", "").replace("*", "").replace("`", "");
 
                             return objectMapper.readValue(jsonResponseText,
-                                    objectMapper.getTypeFactory().constructCollectionType(List.class, ChatbotResponse.class));
+                                    objectMapper.getTypeFactory().constructCollectionType(List.class, CourseDTO.class));
                         }
                     }
                 }
@@ -103,7 +100,7 @@ public class ChatbotService {
                 "day": "[일차 (예: 1일차)]",
                 "time": "[시간대 (예: 아침, 점심, 저녁)]",
                 "recomm": "[추천 관광지 1곳 & 추천 맛집 1곳]",
-                "desc": "추천 관광지 설명\\n추천 맛집 설명"
+                "description": "추천 관광지 설명\\n추천 맛집 설명"
               }
               // ... (추가적인 일차 및 시간대별 코스) ...
             ]
@@ -148,9 +145,9 @@ public class ChatbotService {
         chatbotResponseProperties.put("day", Map.of("type", "STRING"));
         chatbotResponseProperties.put("time", Map.of("type", "STRING"));
         chatbotResponseProperties.put("recomm", Map.of("type", "STRING"));
-        chatbotResponseProperties.put("desc", Map.of("type", "STRING"));
+        chatbotResponseProperties.put("description", Map.of("type", "STRING"));
 
-        List<String> chatbotResponseRequired = List.of("day", "time", "recomm", "desc");
+        List<String> chatbotResponseRequired = List.of("day", "time", "recomm", "description");
         Map<String, Object> chatbotResponseSchema = Map.of(
                 "type", "OBJECT",
                 "properties", chatbotResponseProperties,
