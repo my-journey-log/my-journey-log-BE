@@ -3,6 +3,7 @@ package com.myjourneylog.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.myjourneylog.dto.ChatbotRequest;
+import com.myjourneylog.dto.ChatbotResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -12,6 +13,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +22,7 @@ import java.util.Map;
 public class ChatbotService {
 
     private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
 
     @Value("${gemini.api-key}")
     private String apiKey;
@@ -27,18 +30,19 @@ public class ChatbotService {
     @Value("${gemini.api-url}")
     private String apiUrl;
 
-    public ChatbotService(RestTemplate restTemplate) {
+    public ChatbotService(RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
     }
 
-    public String getText(ChatbotRequest request) {
+    public List<ChatbotResponse> getText(ChatbotRequest request) {
         String fullApiUrlString = UriComponentsBuilder.fromUriString(apiUrl)
                 .queryParam("key", apiKey)
                 .build().toUriString();
 
         // Gemini API 요청 본문 생성 (Map 형태로)
         String prompt = createPrompt(request);
-        Map<String, Object> requestBody = createGeminiApiRequest(prompt.toString());
+        Map<String, Object> requestBody = createGeminiApiRequest(prompt);
 
         // HTTP 헤더 설정 (Content-Type: application/json)
         HttpHeaders headers = new HttpHeaders();
@@ -49,28 +53,40 @@ public class ChatbotService {
 
         try {
             JsonNode geminiApiResponse = restTemplate.postForObject(fullApiUrlString, requestEntity, JsonNode.class);
+
             if (geminiApiResponse != null && geminiApiResponse.has("candidates")) {
-                String generatedText = geminiApiResponse.path("candidates").path(0).path("content").path("parts").path(0).path("text").asText();
-                if (!generatedText.isEmpty()) { // 빈 문자열이 아니면 유효한 응답으로 간주
-                    return generatedText;
+                JsonNode candidates = geminiApiResponse.get("candidates");
+                if (candidates.isArray() && candidates.size() > 0) {
+                    JsonNode firstCandidate = candidates.get(0);
+                    if (firstCandidate.has("content") && firstCandidate.get("content").has("parts")) {
+                        JsonNode parts = firstCandidate.get("content").get("parts");
+                        if (parts.isArray() && parts.size() > 0 && parts.get(0).has("text")) {
+                            String jsonResponseText = parts.get(0).get("text").asText();
+
+                            jsonResponseText = jsonResponseText.replace("#", "").replace("*", "").replace("`", "");
+
+                            return objectMapper.readValue(jsonResponseText,
+                                    objectMapper.getTypeFactory().constructCollectionType(List.class, ChatbotResponse.class));
+                        }
+                    }
                 }
             }
             System.err.println("Gemini API response was empty or invalid or missing expected fields: " + geminiApiResponse);
-            return "Error: Gemini API 응답이 비어있거나 유효하지 않거나 예상 필드가 누락되었습니다.";
+            return Collections.emptyList();
         } catch (HttpClientErrorException e) {
             System.err.println("HTTP Client Error calling Gemini API: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
             e.printStackTrace();
-            return "Error: Gemini API 호출 중 HTTP 오류가 발생했습니다: " + e.getStatusCode() + " - " + e.getResponseBodyAsString();
+            return Collections.emptyList();
         } catch (Exception e) {
             System.err.println("Error calling Gemini API: " + e.getMessage());
             e.printStackTrace();
-            return "Error: Gemini API 호출 중 알 수 없는 오류가 발생했습니다: " + e.getMessage();
+            return Collections.emptyList();
         }
     }
 
     private String createPrompt(ChatbotRequest request) {
         String promptTemplate = """
-            당신은 전문 여행 플래너입니다. 다음 여행 계획에 따라 상세한 여행 코스를 반드시 JSON 형식으로 추천해주세요.
+            당신은 전문 여행 플래너입니다. 다음 여행 계획에 따라 상세한 여행 코스를 JSON 형식으로 추천해주세요.
             반드시 다음 JSON 스키마를 따르고, 한국어로 내용을 채워주세요.
             JSON만 출력하고 다른 설명은 일절 포함하지 마세요.
 
@@ -82,21 +98,21 @@ public class ChatbotService {
 
             JSON 응답은 다음 형식이어야 합니다:
             ```json
-            {
-              "destination": "[여행 목적지]",
-              "dailyPlans": [
-                {
-                  "day": 1,
-                  "morning": { "recommendation": "[추천 관광 & 추천 맛집]", "description": "- 추천 관광지 설명\\n- 추천 맛집 설명" },
-                  "lunch": { "recommendation": "[추천 관광 & 추천 맛집]", "description": "- 추천 관광지 설명\\n- 추천 맛집 설명" },
-                  "dinner": { "recommendation": "[추천 관광 & 추천 맛집]", "description": "- 추천 관광지 설명\\n- 추천 맛집 설명" }
-                }
-              ]
-            }
+            [
+              {
+                "day": "[일차 (예: 1일차)]",
+                "time": "[시간대 (예: 아침, 점심, 저녁)]",
+                "recomm": "[추천 관광지 1곳 & 추천 맛집 1곳]",
+                "desc": "추천 관광지 설명\\n추천 맛집 설명"
+              }
+              // ... (추가적인 일차 및 시간대별 코스) ...
+            ]
             ```
 
-            각 일자에 대해 아침, 점심, 저녁 계획을 포함해야 합니다. recommendation은 간결하게 추천 관광지 1곳, 추천 맛집 1곳을, description은 상세하게 설명해주세요.
-            마크다운 표시를 제거하고 제공해주세요 (제거대상: #, *).
+            각 일차의 아침, 점심, 저녁 계획을 각각 하나의 객체로 만들어 리스트에 포함해야 합니다.
+            "recomm" 필드는 간결하게 추천 관광지 1곳과 추천 맛집 1곳을 "&"로 연결하여 제공해주세요.
+            "desc" 필드는 추천 관광지 설명과 추천 맛집 설명을 "\\n"으로 구분하여 상세하게 제공해주세요.
+            **마크다운 서식 문자를 절대 사용하지 마세요 (예: #, *, -, >, ` 등).**
             반드시! JSON 형식의 응답으로 제공해주세요.
             """;
 
@@ -120,9 +136,30 @@ public class ChatbotService {
 
         // 'generationConfig' 부분
         Map<String, Object> generationConfig = new HashMap<>();
-        generationConfig.put("responseMimeType", "text/plain");
+        generationConfig.put("responseMimeType", "application/json");
+        generationConfig.put("responseSchema", createResponseSchema());
         requestMap.put("generationConfig", generationConfig);
 
         return requestMap;
+    }
+
+    private Map<String, Object> createResponseSchema() {
+        Map<String, Object> chatbotResponseProperties = new HashMap<>();
+        chatbotResponseProperties.put("day", Map.of("type", "STRING"));
+        chatbotResponseProperties.put("time", Map.of("type", "STRING"));
+        chatbotResponseProperties.put("recomm", Map.of("type", "STRING"));
+        chatbotResponseProperties.put("desc", Map.of("type", "STRING"));
+
+        List<String> chatbotResponseRequired = List.of("day", "time", "recomm", "desc");
+        Map<String, Object> chatbotResponseSchema = Map.of(
+                "type", "OBJECT",
+                "properties", chatbotResponseProperties,
+                "required", chatbotResponseRequired
+        );
+
+        return Map.of(
+                "type", "ARRAY",
+                "items", chatbotResponseSchema
+        );
     }
 }
