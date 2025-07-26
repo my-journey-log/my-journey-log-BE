@@ -15,13 +15,13 @@ public class CourseController {
 
     private final CourseService courseService;
 
-    @PostMapping("/add")
+    @PostMapping
     public ResponseEntity<String> saveCourse(@RequestBody List<Course> course) {
         courseService.addCourse(course);
         return ResponseEntity.ok("Course added successfully!");
     }
 
-    @GetMapping("/get")
+    @GetMapping
     public ResponseEntity<List<Course>> getCourses(@RequestParam Long userId) {
         List<Course> courses = courseService.getCourses(userId).stream().toList();
         return ResponseEntity.ok(courses);

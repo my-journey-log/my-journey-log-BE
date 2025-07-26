@@ -20,14 +20,15 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/post/remove/**").permitAll()
                         .requestMatchers(
                                 "/login",
+                                "/api/v1/**",
                                 "/api/v1/users/signup",
                                 "/api/v1/places/**",
+                                "/api/v1/course",
                                 "/api/v1/course/**",
                                 "/api/v1/post/**",
-                                "/api/v1/posts",
+                                "/api/v1/post/remove/**",
                                 "/css/**", "/js/**", "/images/**",
                                 "/chatbot"
                         ).permitAll()

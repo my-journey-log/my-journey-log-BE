@@ -16,13 +16,13 @@ public class PostController {
 
     private final PostService postService;
 
-    @PostMapping("/")
+    @PostMapping("create")
     public ResponseEntity<String> createPost(@RequestBody Post post) {
         postService.create(post);
         return ResponseEntity.ok("Post created");
     }
 
-    @PostMapping("/posts")
+    @PostMapping("posts")
     public List<Post> getPosts(@RequestBody PostDTO reqPost) {
         return postService.getPosts(reqPost.getUserId());
     }
