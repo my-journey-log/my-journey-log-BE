@@ -2,6 +2,7 @@ package com.myjourneylog.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -19,11 +20,14 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/post/remove/**").permitAll()
                         .requestMatchers(
                                 "/login",
                                 "/api/v1/users/signup",
                                 "/api/v1/places/**",
                                 "/api/v1/course/**",
+                                "/api/v1/post/**",
+                                "/api/v1/posts",
                                 "/css/**", "/js/**", "/images/**",
                                 "/chatbot"
                         ).permitAll()
