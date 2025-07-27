@@ -1,14 +1,13 @@
 package com.myjourneylog.service;
 
 import com.myjourneylog.domain.User;
-import com.myjourneylog.dto.UserSignupRequest;
 import com.myjourneylog.dto.UserUpdateRequest;
 import com.myjourneylog.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import com.myjourneylog.dto.UserSignupRequest;
 
 
 @Service
@@ -16,8 +15,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final String uploadDir = "/backend/uploads/";
 
-    public User signup(UserSignupRequest req) {
+    public void signup(UserSignupRequest req) {
         if (userRepository.existsByEmail(req.getEmail())) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
@@ -34,17 +34,29 @@ public class UserService {
                 .bio(req.getBio())
                 .build();
 
-        return userRepository.save(user);
+        userRepository.save(user);
     }
 
-    public void updateProfile(UserUpdateRequest request) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    @Transactional
+    public void updateProfile(UserUpdateRequest req) {
+        User user = userRepository.findById(1L)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        if(request.getNickname() != null) user.setNickname(request.getNickname());
-        if(request.getProfileImgUrl() != null) user.setProfileImgUrl(request.getProfileImgUrl());
-        if(request.getBio() != null) user.setBio(request.getBio());
+        user.setNickname(req.getNickname());
+        user.setBio(req.getBio());
+
+        if (req.getProfileImg() != null && !req.getProfileImg().isEmpty()) {
+            try {
+                String fileName = System.currentTimeMillis() + "_" + req.getProfileImg().getOriginalFilename();
+                String fullPath = uploadDir + fileName;
+                java.io.File dest = new java.io.File(fullPath);
+                dest.getParentFile().mkdirs();
+                req.getProfileImg().transferTo(dest);
+                user.setProfileImgUrl("/uploads/" + fileName);
+            } catch (Exception e) {
+                throw new RuntimeException("프로필 이미지 저장 실패: " + e.getMessage());
+            }
+        }
 
         userRepository.save(user);
     }

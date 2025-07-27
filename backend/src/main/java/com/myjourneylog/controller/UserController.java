@@ -18,8 +18,9 @@ public class UserController {
         userService.signup(request);
         return ResponseEntity.ok("회원가입 성공");
     }
-    @PatchMapping("/me")
-    public ResponseEntity<String> updateProfile(@RequestBody UserUpdateRequest request) {
+
+    @PatchMapping(value = "/me", consumes = {"multipart/form-data"})
+    public ResponseEntity<String> updateProfile(@ModelAttribute UserUpdateRequest request) {
         userService.updateProfile(request);
         return ResponseEntity.ok("회원 정보 수정 성공");
     }
