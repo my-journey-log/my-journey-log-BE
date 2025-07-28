@@ -16,8 +16,15 @@ public class PostService {
     private final PostRepository postRepository;
 
     @Transactional
-    public void create(Post post) {
-        postRepository.save(post);
+    public void create(PostDTO post) {
+        Post postEntity = new Post().builder()
+                .userId(post.getUserId())
+                .placeId(post.getPlaceId())
+                .title(post.getTitle())
+                .content(post.getContent())
+                .imageUrls(post.getImageUrl().toString())
+                .build();
+        postRepository.save(postEntity);
     }
 
     public List<Post> getPosts(Long userId) {
@@ -25,16 +32,9 @@ public class PostService {
     }
 
     @Transactional
-    public PostDTO getPostById(Long id) {
-        Post post = postRepository.findById(id).orElse(null);
-        post.setTitle(post.getTitle());
-        return new PostDTO(
-                post.getId(),
-                post.getUserId(),
-                post.getTitle(),
-                post.getContent(),
-                post.getImageUrl()
-        );
+    public Post getPostById(Long id) {
+        return postRepository.findById(id).orElse(null);
+
     }
 
     @Transactional
@@ -43,7 +43,7 @@ public class PostService {
 
         postToUpdate.setTitle(post.getTitle());
         postToUpdate.setContent(post.getContent());
-        postToUpdate.setImageUrl(post.getImageUrl());
+        postToUpdate.setImageUrls(post.getImageUrl().toString());
         postRepository.save(postToUpdate);
     }
 

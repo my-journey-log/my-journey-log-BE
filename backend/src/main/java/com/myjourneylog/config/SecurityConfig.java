@@ -22,16 +22,17 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(
                                 "/login",
-                                "/api/v1/**",
                                 "/api/v1/users/signup",
                                 "/api/v1/places/**",
                                 "/api/v1/course",
                                 "/api/v1/course/**",
-                                "/api/v1/post/**",
+                                "/api/v1/posts",
                                 "/api/v1/post/remove/**",
+                                "/api/v1/post/**",
                                 "/css/**", "/js/**", "/images/**",
                                 "/chatbot"
                         ).permitAll()
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(AbstractHttpConfigurer::disable);

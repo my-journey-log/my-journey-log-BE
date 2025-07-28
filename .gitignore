@@ -64,3 +64,5 @@ replay_pid*
 
 
 frontend/node_modules/
+
+/backend/uploads
