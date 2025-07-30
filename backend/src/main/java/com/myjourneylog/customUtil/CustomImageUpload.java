@@ -1,6 +1,5 @@
 package com.myjourneylog.customUtil;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -8,7 +7,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.UUID;
 
 
 @Component
@@ -16,9 +15,8 @@ public class CustomImageUpload {
 
     private static final String UPLOAD_DIR = "uploads/";
 
-    @Bean
-    public String uploadMultipleImages(List<MultipartFile> files) {
-        if (files.isEmpty()) {
+    public String uploadMultipleImages(MultipartFile file) {
+        if (file.isEmpty()) {
             return "No files selected for upload";
         }
 
@@ -28,17 +26,18 @@ public class CustomImageUpload {
                 Files.createDirectories(path);
             }
 
-            for (MultipartFile file: files)
-            {
-                String fileName = file.getOriginalFilename();
-                String filePath = UPLOAD_DIR + fileName;
-                Files.copy(file.getInputStream(), Paths.get(filePath));
-            }
-            return "Multiple images uploaded successfully!";
+            StringBuffer sb = new StringBuffer();
+            UUID uuid = UUID.randomUUID();
+            String fileName = uuid.toString() + "_" + file.getOriginalFilename();
+            String filePath = UPLOAD_DIR + fileName;
+            Files.copy(file.getInputStream(), Paths.get(filePath));
+            sb.append(filePath);
+
+            return sb.toString();
         } catch (IOException e)
         {
             e.printStackTrace();
-            return "Failed to upload image";
+            return "";
         }
     }
 }

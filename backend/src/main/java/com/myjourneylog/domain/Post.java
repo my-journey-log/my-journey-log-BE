@@ -26,7 +26,7 @@ public class Post {
     private String title;
     private String content;
     @Column(name = "image_url")
-    private String imageUrls;
+    private List<String> imageUrls;
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

@@ -5,9 +5,7 @@ import com.myjourneylog.dto.PostDTO;
 import com.myjourneylog.service.PostService;
 import com.myjourneylog.customUtil.CustomImageUpload;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,12 +19,9 @@ public class PostController {
     private final CustomImageUpload customImageUpload;
 
     @PostMapping(value = "/create", consumes = {"multipart/form-data"})
-    public ResponseEntity<String> createPost(@ModelAttribute PostDTO post) {
-        if (post.getImageUrl() != null) {
-            customImageUpload.uploadMultipleImages(post.getImageUrl());
-        }
+    public ResponseEntity<String> createPost(@ModelAttribute PostDTO reqPost) {
 
-        postService.create(post);
+        postService.create(reqPost);
         return ResponseEntity.ok("Post created");
     }
 
@@ -43,11 +38,8 @@ public class PostController {
 
     @PatchMapping("/update")
     public ResponseEntity<String> updatePost(@RequestBody PostDTO reqPost) {
-        if (reqPost.getImageUrl() != null) {
-            customImageUpload.uploadMultipleImages(reqPost.getImageUrl());
-        }
-        postService.updatePost(reqPost);
 
+        postService.updatePost(reqPost);
         return ResponseEntity.ok("정보 수정 성공");
     }
 
