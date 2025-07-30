@@ -21,7 +21,6 @@ public class PostService {
     private final CustomImageUpload customImageUpload;
 
     private List<MultipartFile> images;
-    private File file;
 
     @Transactional
     public void create(PostDTO post) {

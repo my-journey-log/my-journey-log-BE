@@ -1,5 +1,6 @@
 package com.myjourneylog.service;
 
+import com.myjourneylog.customUtil.CustomImageUpload;
 import com.myjourneylog.domain.User;
 import com.myjourneylog.dto.UserUpdateRequest;
 import com.myjourneylog.repository.UserRepository;
@@ -9,13 +10,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.myjourneylog.dto.UserSignupRequest;
 
+import java.io.File;
+
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
-    private final String uploadDir = "/backend/uploads/";
+    private final CustomImageUpload customImageUpload;
 
     public void signup(UserSignupRequest req) {
         if (userRepository.existsByEmail(req.getEmail())) {
@@ -25,12 +28,17 @@ public class UserService {
             throw new IllegalArgumentException("이미 존재하는 닉네임입니다.");
         }
         String encodedPwd = passwordEncoder.encode(req.getPassword());
+        String profileImgUrl = "";
+
+        if (req.getProfileImgUrl() != null) {
+            profileImgUrl = customImageUpload.uploadMultipleImages(req.getProfileImgUrl());
+        }
 
         User user = User.builder()
                 .email(req.getEmail())
                 .password(encodedPwd)
                 .nickname(req.getNickname())
-                .profileImgUrl(req.getProfileImgUrl())
+                .profileImgUrl(profileImgUrl)
                 .bio(req.getBio())
                 .build();
 
@@ -39,24 +47,22 @@ public class UserService {
 
     @Transactional
     public void updateProfile(UserUpdateRequest req) {
-        User user = userRepository.findById(1L)
+        User user = userRepository.findById(req.getId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        String imgUrl = user.getProfileImgUrl();
+        if (!imgUrl.isEmpty()) {
+            File f = new File(imgUrl);
+            if (f.exists()) {
+                f.delete();
+            }
+        }
 
+        String profileImgUrl = customImageUpload.uploadMultipleImages(req.getProfileImg());
+
+        user.setProfileImgUrl(profileImgUrl);
         user.setNickname(req.getNickname());
         user.setBio(req.getBio());
 
-        if (req.getProfileImg() != null && !req.getProfileImg().isEmpty()) {
-            try {
-                String fileName = System.currentTimeMillis() + "_" + req.getProfileImg().getOriginalFilename();
-                String fullPath = uploadDir + fileName;
-                java.io.File dest = new java.io.File(fullPath);
-                dest.getParentFile().mkdirs();
-                req.getProfileImg().transferTo(dest);
-                user.setProfileImgUrl("/uploads/" + fileName);
-            } catch (Exception e) {
-                throw new RuntimeException("프로필 이미지 저장 실패: " + e.getMessage());
-            }
-        }
 
         userRepository.save(user);
     }

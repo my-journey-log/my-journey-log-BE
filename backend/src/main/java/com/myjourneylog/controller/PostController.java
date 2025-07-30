@@ -36,7 +36,7 @@ public class PostController {
         return ResponseEntity.ok(post);
     }
 
-    @PatchMapping("/update")
+    @PatchMapping(value = "/update", consumes = {"multipart/form-data"})
     public ResponseEntity<String> updatePost(@RequestBody PostDTO reqPost) {
 
         postService.updatePost(reqPost);
