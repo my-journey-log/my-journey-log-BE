@@ -9,6 +9,7 @@ import com.myjourneylog.dto.PlaceCreateRequest;
 import com.myjourneylog.dto.PlaceResponse;
 import com.myjourneylog.repository.PlaceRepository;
 import com.myjourneylog.repository.UserRepository;
+import com.myjourneylog.customUtil.CustomImageUpload;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,24 +20,15 @@ public class PlaceService {
     private final PlaceRepository placeRepository;
     private final UserRepository userRepository;
 
-    private final String uploadDir = "/backend/uploads/";
+    private CustomImageUpload customImageUpload;
 
     public PlaceResponse createPlace(PlaceCreateRequest req) {
         User user = userRepository.findById(req.getCreatedBy())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        String imagePath = null;
+        String imagePath = "";
         if (req.getImage() != null && !req.getImage().isEmpty()) {
-            try {
-                String fileName = System.currentTimeMillis() + "_" + req.getImage().getOriginalFilename();
-                String fullPath = uploadDir + fileName;
-                java.io.File dest = new java.io.File(fullPath);
-                dest.getParentFile().mkdirs();
-                req.getImage().transferTo(dest);
-                imagePath = "/uploads/" + fileName;
-            } catch (Exception e) {
-                throw new RuntimeException("이미지 저장 실패: " + e.getMessage());
-            }
+            imagePath = customImageUpload.uploadMultipleImages(req.getImage());
         }
 
         Place place = Place.builder()
