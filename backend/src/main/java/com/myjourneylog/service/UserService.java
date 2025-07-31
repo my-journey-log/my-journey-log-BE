@@ -1,14 +1,16 @@
 package com.myjourneylog.service;
 
+import com.myjourneylog.customUtil.CustomImageUpload;
 import com.myjourneylog.domain.User;
-import com.myjourneylog.dto.UserSignupRequest;
 import com.myjourneylog.dto.UserUpdateRequest;
 import com.myjourneylog.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import com.myjourneylog.dto.UserSignupRequest;
+
+import java.io.File;
 
 
 @Service
@@ -16,8 +18,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 public class UserService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final CustomImageUpload customImageUpload;
 
-    public User signup(UserSignupRequest req) {
+    public void signup(UserSignupRequest req) {
         if (userRepository.existsByEmail(req.getEmail())) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
@@ -25,26 +28,41 @@ public class UserService {
             throw new IllegalArgumentException("이미 존재하는 닉네임입니다.");
         }
         String encodedPwd = passwordEncoder.encode(req.getPassword());
+        String profileImgUrl = "";
+
+        if (req.getProfileImgUrl() != null) {
+            profileImgUrl = customImageUpload.uploadMultipleImages(req.getProfileImgUrl());
+        }
 
         User user = User.builder()
                 .email(req.getEmail())
                 .password(encodedPwd)
                 .nickname(req.getNickname())
-                .profileImgUrl(req.getProfileImgUrl())
+                .profileImgUrl(profileImgUrl)
                 .bio(req.getBio())
                 .build();
 
-        return userRepository.save(user);
+        userRepository.save(user);
     }
 
-    public void updateProfile(UserUpdateRequest request) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    @Transactional
+    public void updateProfile(UserUpdateRequest req) {
+        User user = userRepository.findById(req.getId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        String imgUrl = user.getProfileImgUrl();
+        if (!imgUrl.isEmpty()) {
+            File f = new File(imgUrl);
+            if (f.exists()) {
+                f.delete();
+            }
+        }
 
-        if(request.getNickname() != null) user.setNickname(request.getNickname());
-        if(request.getProfileImgUrl() != null) user.setProfileImgUrl(request.getProfileImgUrl());
-        if(request.getBio() != null) user.setBio(request.getBio());
+        String profileImgUrl = customImageUpload.uploadMultipleImages(req.getProfileImg());
+
+        user.setProfileImgUrl(profileImgUrl);
+        user.setNickname(req.getNickname());
+        user.setBio(req.getBio());
+
 
         userRepository.save(user);
     }

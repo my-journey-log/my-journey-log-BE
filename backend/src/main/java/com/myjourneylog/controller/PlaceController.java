@@ -3,9 +3,11 @@ package com.myjourneylog.controller;
 import com.myjourneylog.dto.PlaceCreateRequest;
 import com.myjourneylog.dto.PlaceResponse;
 import com.myjourneylog.service.PlaceService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -15,8 +17,8 @@ public class PlaceController {
 
     private final PlaceService placeService;
 
-    @PostMapping
-    public ResponseEntity<PlaceResponse> createPlace(@RequestBody PlaceCreateRequest request) {
+    @PostMapping(consumes = {"multipart/form-data"})
+    public ResponseEntity<PlaceResponse> createPlace(@ModelAttribute PlaceCreateRequest request) {
         return ResponseEntity.ok(placeService.createPlace(request));
     }
 

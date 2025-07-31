@@ -13,13 +13,14 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private final UserService userService;
 
-    @PostMapping("/signup")
-    public ResponseEntity<String> signup(@RequestBody UserSignupRequest request) {
+    @PostMapping(value = "/signup", consumes = {"multipart/form-data"})
+    public ResponseEntity<String> signup(@ModelAttribute UserSignupRequest request) {
         userService.signup(request);
         return ResponseEntity.ok("회원가입 성공");
     }
-    @PatchMapping("/me")
-    public ResponseEntity<String> updateProfile(@RequestBody UserUpdateRequest request) {
+
+    @PatchMapping(value = "/me", consumes = {"multipart/form-data"})
+    public ResponseEntity<String> updateProfile(@ModelAttribute UserUpdateRequest request) {
         userService.updateProfile(request);
         return ResponseEntity.ok("회원 정보 수정 성공");
     }
