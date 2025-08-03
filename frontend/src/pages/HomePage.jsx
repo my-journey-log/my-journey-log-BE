@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import KakaoMap from '../components/KakaoMap';
 // import { savePlace } from '../api/placeApi'; // TODO: Place API 필요시 임포트
 
 function HomePage() {
@@ -21,8 +22,7 @@ function HomePage() {
         <div className="home-page">
             <h2>메인 화면</h2>
             <div className="map-area">
-                {/* 지도 API 연동 영역 (실제 지도 컴포넌트 삽입) */}
-                <p>[지도 API가 여기에 표시됩니다]</p>
+                <KakaoMap /> {/* <-- 여기에 KakaoMap 컴포넌트 렌더링 */}
             </div>
             <div className="destination-input">
                 <input
