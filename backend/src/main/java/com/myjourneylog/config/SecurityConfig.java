@@ -29,8 +29,9 @@ public class SecurityConfig {
                                 "/api/v1/posts",
                                 "/api/v1/post/remove/**",
                                 "/api/v1/post/**",
-                                "/css/**", "/js/**", "/images/**",
-                                "/chatbot"
+                                "/chatbot",
+                                "/css/**", "/js/**", "/images/**", "/files/**",
+                                "/favicon.ico", "/.well-known/**"
                         ).permitAll()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
