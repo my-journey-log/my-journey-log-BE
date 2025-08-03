@@ -11,7 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.myjourneylog.dto.UserSignupRequest;
 
 import java.io.File;
-
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +20,7 @@ public class UserService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final CustomImageUpload customImageUpload;
 
+    // 회원가입
     public void signup(UserSignupRequest req) {
         if (userRepository.existsByEmail(req.getEmail())) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
@@ -45,6 +46,7 @@ public class UserService {
         userRepository.save(user);
     }
 
+    // 프로필 업데이트
     @Transactional
     public void updateProfile(UserUpdateRequest req) {
         User user = userRepository.findById(req.getId())
@@ -63,7 +65,12 @@ public class UserService {
         user.setNickname(req.getNickname());
         user.setBio(req.getBio());
 
-
         userRepository.save(user);
+    }
+
+    public List<User> getFollowings(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return user.getFollowings();
     }
 }

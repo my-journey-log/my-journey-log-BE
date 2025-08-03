@@ -1,19 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
-const dummyFollowings = [
-    {
-        id: 1,
-        name: "Sophia Clark",
-        profileImgUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuC-xAFC6OTUrg0ogp2hlJqLuqbQLMrxT9l-qHv9L8MXmfYvFjtmuVCTThVOh0D0oNSa2D-zR5P316ieR7pTC2pAwlf-HD7rVzqGcrI4D_49LdCc1qxz44BWC22ehBfiyrpGiFJhV5S-BN7cJuSVoM1Vyh4Z-aJV9yzv9IvdK79G2RL2KG1J5ldwSR3sHFdrVAk7WqM_PJESMrbd6xCcoOHkeHeakEnEc8-o33b985fKFdThsE_b29IUdG33Hytnu0yeIgIonTgt9-4x",
-        bio: "Travel enthusiast",
-    }
-];
-
-function FollowingList() {
+function FollowingList({ userId }) {
     const [search, setSearch] = useState("");
-    const [followings, setFollowings] = useState(dummyFollowings);
+    const [followings, setFollowings] = useState([]);
 
-    const filtered = followings.filter(u =>
+    useEffect(() => {
+        const fetchFollowings = async () => {
+            try {
+                const response = await axios.get(`/api/v1/followings?userId=${userId}`);
+                setFollowings(response.data);
+            } catch (error) {
+                console.error("팔로잉 목록을 가져오는 데 오류가 발생했습니다:", error);
+            }
+        };
+
+        fetchFollowings();
+    }, [userId]);
+
+    const filtered = followings.filter((u) =>
         u.name.toLowerCase().includes(search.toLowerCase())
     );
 
@@ -55,13 +60,17 @@ function FollowingList() {
                                         placeholder="Find people"
                                         className="form-input flex w-full min-w-0 flex-1 rounded-xl text-[#0e151b] border-none bg-[#e7eef3] h-full placeholder:text-[#4e7997] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal"
                                         value={search}
-                                        onChange={e => setSearch(e.target.value)}
+                                        onChange={e => setSearch(e.target.value)} // 검색어 업데이트
                                     />
                                 </div>
                             </label>
                         </div>
-                        {filtered.map(u => (
-                            <div key={u.id} className="flex items-center gap-4 bg-slate-50 px-4 min-h-[72px] py-2 justify-between">
+                        {/* 필터링된 팔로잉 리스트 표시 */}
+                        {filtered.map((u) => (
+                            <div
+                                key={u.id}
+                                className="flex items-center gap-4 bg-slate-50 px-4 min-h-[72px] py-2 justify-between"
+                            >
                                 <div className="flex items-center gap-4">
                                     <div
                                         className="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-14 w-fit"
