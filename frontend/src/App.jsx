@@ -1,17 +1,24 @@
 import { useState } from "react";
+import { Routes, Route } from 'react-router-dom';
+import HomePage from './pages/HomePage';
+import ChatbotPage from './pages/ChatbotPage';
 import Login from "./components/Login";
 
 function App() {
-    const [user, setUser] = useState(null);
-
-    if (!user) {
-        return <Login onLogin={setUser} />;
-    }
+    // const [user, setUser] = useState(null);
+    //
+    // if (!user) {
+    //     return <Login onLogin={setUser} />;
+    // }
 
     return (
         <div>
-            <h1>안녕하세요, {user.nickname || user.email}!</h1>
+            {/*<h1>안녕하세요, {user.nickname || user.email}!</h1>*/}
             {/* 로그인 후 메인화면 */}
+            <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/chatbot" element={<ChatbotPage />} />
+            </Routes>
         </div>
     );
 }
