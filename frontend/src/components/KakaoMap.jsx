@@ -1,7 +1,27 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import axios from "axios";
 
 function KakaoMap() {
     const mapRef = useRef(null);
+    const [locationData, setLocationData] = useState(null);
+
+    useEffect(() => {
+        axios
+            .get(`https://dapi.kakao.com/v2/local/search/address.json?query=서울`, {
+                headers: {
+                    Authorization: `KakaoAK e7cd40de368883583525cde467f28757`,
+                },
+            })
+            .then((response) => {
+                const location = response.data.documents[0].road_address
+                    ? response.data.documents[0].road_address
+                    : response.data.documents[0].address;
+                setLocationData(location);
+            })
+            .catch((error) => {
+                console.error("위치 데이터 로딩 오류:", error);
+            });
+    }, []);
 
     useEffect(() => {
         if (!window.kakao || !window.kakao.maps) {
@@ -24,12 +44,21 @@ function KakaoMap() {
 
         function drawMap() {
             if (!mapRef.current) return;
-            new window.kakao.maps.Map(mapRef.current, {
+
+            const map = new window.kakao.maps.Map(mapRef.current, {
                 center: new window.kakao.maps.LatLng(37.5665, 126.9780),
                 level: 3,
             });
+
+            if (locationData) {
+                const position = new window.kakao.maps.LatLng(locationData.y, locationData.x);
+                const marker = new window.kakao.maps.Marker({
+                    position: position,
+                });
+                marker.setMap(map);
+            }
         }
-    }, []);
+    }, [locationData]);
 
     return (
         <div
