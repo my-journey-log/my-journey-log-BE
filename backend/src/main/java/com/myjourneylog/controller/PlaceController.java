@@ -5,6 +5,7 @@ import com.myjourneylog.dto.PlaceResponse;
 import com.myjourneylog.service.PlaceService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +18,7 @@ public class PlaceController {
 
     private final PlaceService placeService;
 
-    @PostMapping(consumes = {"multipart/form-data"})
+    @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<PlaceResponse> createPlace(@ModelAttribute PlaceCreateRequest request) {
         return ResponseEntity.ok(placeService.createPlace(request));
     }
