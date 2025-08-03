@@ -3,6 +3,7 @@ package com.myjourneylog.dto;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -17,4 +18,5 @@ public class PostDTO {
     private String title;
     private String content;
     private List<MultipartFile> imageUrl;
+    private LocalDateTime createdDate;
 }
