@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,19 +39,34 @@ public class PostService {
     }
 
     public List<Post> getPosts(Long userId) {
-        return postRepository.findByUserId(userId);
+        List<Post> findByPosts = postRepository.findByUserId(userId);
+        return findByPosts.stream().map(post -> Post.builder()
+                .id(post.getId())
+                .userId(post.getUserId())
+                .placeId(post.getPlaceId())
+                .title(post.getTitle())
+                .content(post.getContent())
+                .imageUrls(post.getImageUrls().stream().map(customImageUpload::GetPullUrl).collect(Collectors.toList()))
+                .build()).toList();
     }
 
     @Transactional
     public Post getPostById(Long id) {
-        return postRepository.findById(id).orElse(null);
-
+        Post post = postRepository.findById(id).orElse(null);
+        return Post.builder()
+                .id(post.getId())
+                .userId(post.getUserId())
+                .placeId(post.getPlaceId())
+                .title(post.getTitle())
+                .content(post.getContent())
+                .imageUrls(post.getImageUrls().stream().map(customImageUpload::GetPullUrl).collect(Collectors.toList()))
+                .build();
     }
 
     @Transactional
     public void updatePost(PostDTO post) {
         Post postToUpdate = postRepository.findById(post.getId()).orElse(null);
-        ArrayList<String> imagesToString = new ArrayList<>();
+        ArrayList<String> imagesToString;
         imagesToString = saveToImages(post);
 
         postToUpdate.setTitle(post.getTitle());
@@ -63,7 +79,8 @@ public class PostService {
     public void deletePost(Long id) {
         Post post = postRepository.findById(id).orElse(null);
         for (String image : post.getImageUrls()) {
-            File f = new File(image);
+            String imagePath = customImageUpload.uploadFilePath(image);
+            File f = new File(imagePath);
             if (f.exists()) {
                 f.delete();
             }

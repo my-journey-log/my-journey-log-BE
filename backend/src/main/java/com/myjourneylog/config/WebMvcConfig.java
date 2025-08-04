@@ -21,6 +21,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
         // serveUrl (예: /files/) 뒤에 오는 모든 경로 (**)에 대해 요청이 들어오면,
         // 실제 파일이 저장된 로컬 디렉토리(file:./uploads/)에서 파일을 찾아서 제공
         registry.addResourceHandler(serveUrl + "**") // 예: /files/**
-                .addResourceLocations("file:" + uploadDir + "/"); // 예: file:./uploads/
+                .addResourceLocations("file:" + uploadDir); // 예: file:./uploads/
     }
 }
