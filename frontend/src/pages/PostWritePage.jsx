@@ -28,7 +28,7 @@ function PostWritePage() {
                         placeId: data.placeId,
                         title: data.title,
                         content: data.content,
-                        imageUrls: data.imageFieldName ? data.imageFieldName.split(',').map(filename => `http://localhost:8080/files/${filename.trim()}`) : [],
+                        imageUrls: data.imageUrls ? data.imageUrls.split(',').map(filename => `http://localhost:8080/files/${filename.trim()}`) : [],
                     };
                     setInitialData(transformedData);
                 } catch (err) {

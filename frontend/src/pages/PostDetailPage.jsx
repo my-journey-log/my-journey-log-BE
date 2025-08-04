@@ -54,17 +54,18 @@ function PostDetailPage() {
         return <p>게시물을 찾을 수 없습니다.</p>;
     }
 
-    const imageUrls = post.imageFieldName ? post.imageFieldName.split(',').map(filename => `http://localhost:8080/files/${filename.trim()}`) : [];
+    const imageUrlsToDisplay = post.imageUrls || [];
 
     return (
         <div className="post-detail-page">
             <h2>{post.title}</h2>
-            <p className="post-meta">작성자 ID: {post.userId} | 장소 ID: {post.placeId} | {new Date(post.createdAt).toLocaleDateString()}</p>
+            {/* createdAt 날짜 형식 변경 */}
+            <p className="post-meta">작성자 ID: {post.userId} | 장소 ID: {post.placeId} | {new Date(post.createdAt).toLocaleString('ko-KR')}</p>
             <div className="post-content">
                 <p>{post.content}</p>
-                {imageUrls.length > 0 && (
+                {imageUrlsToDisplay.length > 0 && (
                     <div className="post-images">
-                        {imageUrls.map((url, index) => (
+                        {imageUrlsToDisplay.map((url, index) => (
                             <img key={index} src={url} alt={`게시물 이미지 ${index + 1}`} className="post-detail-image" />
                         ))}
                     </div>
