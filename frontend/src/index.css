@@ -1,4 +1,3 @@
-/* src/index.css */
 body {
   font-family: Arial, sans-serif;
   margin: 0;
@@ -30,16 +29,22 @@ body {
   font-weight: bold;
 }
 
+.app-header .main-nav {
+  display: flex;
+  align-items: center;
+}
+
 .app-header .main-nav a,
 .app-header .main-nav button {
   color: white;
   text-decoration: none;
-  margin-left: 20px;
+  margin-left: 20px; /* 각 내비게이션 항목 간 간격 */
   padding: 8px 12px;
   border: 1px solid transparent;
   border-radius: 4px;
   background-color: transparent;
   cursor: pointer;
+  font-size: 1em;
   transition: all 0.2s ease-in-out;
 }
 
@@ -62,182 +67,4 @@ body {
   padding: 15px 20px;
   text-align: center;
   margin-top: auto; /* 푸터를 하단에 고정 */
-}
-
-.button {
-  display: inline-block;
-  padding: 10px 15px;
-  background-color: #007bff;
-  color: white;
-  text-decoration: none;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-  border: none;
-  cursor: pointer;
-}
-
-.button:hover {
-  background-color: #0056b3;
-}
-
-.create-post-button {
-  margin-bottom: 20px;
-}
-
-.posts-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
-}
-
-.post-detail-page, .chatbot-page, .home-page, .post-write-page {
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  margin-bottom: 20px;
-}
-
-.post-detail-page h2, .chatbot-page h2, .home-page h2, .post-write-page h3 {
-  color: #333;
-  margin-top: 0;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
-}
-
-.post-detail-image {
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
-  margin-top: 15px;
-}
-
-.post-images {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 15px;
-}
-
-.post-images img {
-  max-width: 150px;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 4px;
-}
-
-.post-actions {
-  margin-top: 20px;
-  display: flex;
-  gap: 10px;
-}
-.post-actions button {
-  padding: 10px 15px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1em;
-  transition: background-color 0.2s;
-}
-.post-actions button:hover {
-  opacity: 0.8;
-}
-.post-actions button:first-child {
-  background-color: #28a745; /* Green for edit */
-  color: white;
-  border: none;
-}
-.post-actions button:last-child {
-  background-color: #dc3545; /* Red for delete */
-  color: white;
-  border: none;
-}
-
-.chatbot-page .input-section label,
-.chatbot-page .manual-course-input label {
-  display: block;
-  margin-bottom: 10px;
-}
-
-.chatbot-page .input-section input,
-.chatbot-page .input-section select,
-.chatbot-page .manual-course-input input,
-.chatbot-page .manual-course-input textarea {
-  width: calc(100% - 22px);
-  padding: 10px;
-  margin-top: 5px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.chatbot-page .input-section button,
-.chatbot-page .manual-course-input button {
-  padding: 10px 15px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 10px;
-  transition: background-color 0.2s;
-}
-
-.chatbot-page .input-section button:hover,
-.chatbot-page .manual-course-input button:hover {
-  background-color: #218838;
-}
-
-.course-cards-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
-}
-
-.manual-course-input {
-  border-top: 1px dashed #ccc;
-  padding-top: 20px;
-  margin-top: 20px;
-}
-
-.added-manual-courses {
-  margin-top: 15px;
-  padding: 10px;
-  border: 1px solid #eee;
-  border-radius: 4px;
-  background-color: #f9f9f9;
-}
-
-.map-area {
-  background-color: #e0e0e0;
-  height: 400px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-  border-radius: 8px;
-  font-size: 1.2em;
-  color: #666;
-}
-
-.destination-input {
-  display: flex;
-  gap: 10px;
-}
-.destination-input input {
-  flex-grow: 1;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-.destination-input button {
-  padding: 10px 15px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.destination-input button:hover {
-  background-color: #0056b3;
 }
