@@ -18,6 +18,10 @@ export default defineConfig({
         target: 'http://host.docker.internal:8080',
         changeOrigin: true,
       },
+      '/files': {
+        target: 'http://host.docker.internal:8080',
+        changeOrigin: true,
+      },
     }
   }
 })

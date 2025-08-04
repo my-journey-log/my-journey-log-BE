@@ -12,7 +12,7 @@ export const createPost = async (formData) => {
     try {
         const response = await api.post('/api/v1/post/create', formData, {
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'multipart/form-data',
             },
         });
         return response.data;
@@ -64,7 +64,7 @@ export const updatePost = async (formData) => {
     try {
         const response = await api.patch('/api/v1/post/update', formData, {
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'multipart/form-data',
             },
         });
         return response.data;
