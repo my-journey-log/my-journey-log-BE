@@ -3,7 +3,6 @@ package com.myjourneylog.controller;
 import com.myjourneylog.dto.PlaceCreateRequest;
 import com.myjourneylog.dto.PlaceResponse;
 import com.myjourneylog.service.PlaceService;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,5 +25,10 @@ public class PlaceController {
     @GetMapping
     public List<PlaceResponse> getAllPlaces() {
         return placeService.getAllPlaces();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<PlaceResponse> getPlace(@PathVariable Long id) {
+        return ResponseEntity.ok(placeService.getPlaceById(id));
     }
 }

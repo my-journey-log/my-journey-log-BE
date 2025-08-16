@@ -52,4 +52,11 @@ public class PlaceService {
                 .map(PlaceResponse::fromEntity)
                 .collect(Collectors.toList());
     }
+
+    public PlaceResponse getPlaceById(Long id) {
+        Place place = placeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Place not found with id: " + id));
+        return PlaceResponse.fromEntity(place);
+    }
+
 }
